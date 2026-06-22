@@ -26,28 +26,6 @@ export class MapGatewayController {
     return lastValueFrom(this.mapsClient.send({ cmd: 'map.findAll' }, {}));
   }
 
-  @Get('points/:id')
-  findOne(@Param('id') id: string) {
-    return lastValueFrom(this.mapsClient.send({ cmd: 'map.findOne' }, { id }));
-  }
-
-  @Post('points')
-  create(@Body() dto: CreatePointDto) {
-    return lastValueFrom(this.mapsClient.send({ cmd: 'map.create' }, dto));
-  }
-
-  @Put('points/:id')
-  update(@Param('id') id: string, @Body() dto: UpdatePointDto) {
-    return lastValueFrom(
-      this.mapsClient.send({ cmd: 'map.update' }, { id, dto }),
-    );
-  }
-
-  @Delete('points/:id')
-  remove(@Param('id') id: string) {
-    return lastValueFrom(this.mapsClient.send({ cmd: 'map.remove' }, { id }));
-  }
-
   @Get('points/nearby')
   findNearby(
     @Query('lat') lat: string,
@@ -84,5 +62,27 @@ export class MapGatewayController {
         },
       ),
     );
+  }
+
+  @Get('points/:id')
+  findOne(@Param('id') id: string) {
+    return lastValueFrom(this.mapsClient.send({ cmd: 'map.findOne' }, { id }));
+  }
+
+  @Post('points')
+  create(@Body() dto: CreatePointDto) {
+    return lastValueFrom(this.mapsClient.send({ cmd: 'map.create' }, dto));
+  }
+
+  @Put('points/:id')
+  update(@Param('id') id: string, @Body() dto: UpdatePointDto) {
+    return lastValueFrom(
+      this.mapsClient.send({ cmd: 'map.update' }, { id, dto }),
+    );
+  }
+
+  @Delete('points/:id')
+  remove(@Param('id') id: string) {
+    return lastValueFrom(this.mapsClient.send({ cmd: 'map.remove' }, { id }));
   }
 }
