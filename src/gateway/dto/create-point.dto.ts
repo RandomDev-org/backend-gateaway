@@ -56,4 +56,8 @@ export class CreatePointDto {
   @IsOptional()
   @IsBoolean()
   isVerified?: boolean;
+
+  @IsOptional()
+  @IsString()
+  poster?: string;
 }

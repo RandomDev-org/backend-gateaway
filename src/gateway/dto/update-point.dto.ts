@@ -60,4 +60,8 @@ export class UpdatePointDto {
   @IsOptional()
   @IsBoolean()
   isVerified?: boolean;
+
+  @IsOptional()
+  @IsString()
+  poster?: string;
 }
