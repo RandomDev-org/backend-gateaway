@@ -85,4 +85,26 @@ export class MapGatewayController {
   remove(@Param('id') id: string) {
     return lastValueFrom(this.mapsClient.send({ cmd: 'map.remove' }, { id }));
   }
+
+  @Get('events')
+  findAllEvents() {
+    return lastValueFrom(this.mapsClient.send({ cmd: 'event.findAll' }, {}));
+  }
+
+  @Get('points/:pointId/events')
+  findEventsByPoint(@Param('pointId') pointId: string) {
+    return lastValueFrom(
+      this.mapsClient.send({ cmd: 'event.findByPoint' }, { pointId }),
+    );
+  }
+
+  @Post('events')
+  createEvent(@Body() dto: Record<string, unknown>) {
+    return lastValueFrom(this.mapsClient.send({ cmd: 'event.create' }, dto));
+  }
+
+  @Delete('events/:id')
+  removeEvent(@Param('id') id: string) {
+    return lastValueFrom(this.mapsClient.send({ cmd: 'event.remove' }, { id }));
+  }
 }
