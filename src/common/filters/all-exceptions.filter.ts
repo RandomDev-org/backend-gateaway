@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  PayloadTooLargeException,
 } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 
@@ -19,7 +20,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Error interno del servidor';
 
-    if (exception instanceof HttpException) {
+    if (exception instanceof PayloadTooLargeException) {
+      status = HttpStatus.PAYLOAD_TOO_LARGE;
+      message = 'La imagen es demasiado grande. El tamaño máximo permitido es 10 MB.';
+    } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       const res = exception.getResponse();
       message = typeof res === 'string' ? res : (res as any).message ?? message;
