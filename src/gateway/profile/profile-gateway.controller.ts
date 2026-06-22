@@ -3,6 +3,7 @@ import {
   Get,
   Put,
   Post,
+  Patch,
   Delete,
   Param,
   Body,
@@ -18,6 +19,23 @@ export class ProfileGatewayController {
     @Inject('PROFILE_SERVICE')
     private readonly profileClient: ClientProxy,
   ) {}
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return lastValueFrom(
+      this.profileClient.send({ cmd: 'profile.findOne' }, { id }),
+    );
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() dto: Record<string, unknown>,
+  ) {
+    return lastValueFrom(
+      this.profileClient.send({ cmd: 'profile.update' }, { id, dto }),
+    );
+  }
 
   @Get(':userId/preferences')
   getPreferences(@Param('userId') userId: string) {
