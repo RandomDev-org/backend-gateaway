@@ -1,0 +1,14 @@
+schema: spec-driven
+created: 2026-06-22
+proposal: |
+  Migrar todos los microservicios a Docker para facilitar el desarrollo
+  y despliegue. Cada servicio obtiene su Dockerfile, y el gateway
+  orquesta todo con docker-compose incluyendo PostgreSQL.
+tasks:
+  - feat: add Dockerfile for NestJS production build
+  - feat: add .dockerignore
+  - feat: add docker-compose.yml orchestrating all services + PostgreSQL
+specs:
+  - docker compose up --build must start all services without errors
+  - Gateway must communicate with maps and profile via TCP inside Docker network
+  - PostgreSQL volumes must persist data across restarts

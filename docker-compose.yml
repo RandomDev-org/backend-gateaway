@@ -1,0 +1,107 @@
+services:
+  postgres-maps:
+    image: postgis/postgis:16-3.4
+    hostname: postgres-maps
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: isasmendi1
+      POSTGRES_DB: locations
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata-maps:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d locations"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres-profile:
+    image: postgres:16-alpine
+    hostname: postgres-profile
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: isasmendi1
+      POSTGRES_DB: profile_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata-profile:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d profile_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend-maps:
+    build:
+      context: ../backend-maps
+      dockerfile: Dockerfile
+    hostname: backend-maps
+    environment:
+      TCP_HOST: 0.0.0.0
+      TCP_PORT: 3001
+      DB_HOST: postgres-maps
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: isasmendi1
+      DB_NAME: locations
+    ports:
+      - "3001"
+    depends_on:
+      postgres-maps:
+        condition: service_healthy
+
+  backend-profile:
+    build:
+      context: ../backend-profile
+      dockerfile: Dockerfile
+    hostname: backend-profile
+    environment:
+      PORT: 3000
+      PROFILES_HOST: 0.0.0.0
+      PROFILES_TCP_PORT: 4002
+      DB_HOST: postgres-profile
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: isasmendi1
+      DB_NAME: profile_db
+      JWT_SECRET: musicspot-dev-secret-key-2026
+    ports:
+      - "3002:3000"
+      - "4002"
+    depends_on:
+      postgres-profile:
+        condition: service_healthy
+
+  backend-gateaway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: backend-gateaway
+    environment:
+      PORT: 3000
+      MAPS_HOST: backend-maps
+      MAPS_TCP_PORT: 3001
+      PROFILE_HOST: backend-profile
+      PROFILE_TCP_PORT: 4002
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend-maps
+      - backend-profile
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ""
+    ports:
+      - "80:80"
+    depends_on:
+      - backend-gateaway
+
+volumes:
+  pgdata-maps:
+  pgdata-profile:
