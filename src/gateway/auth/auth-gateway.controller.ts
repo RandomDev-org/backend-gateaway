@@ -53,12 +53,12 @@ export class AuthGatewayController implements OnModuleInit {
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   register(@Body() dto: { email: string; password: string; name: string }) {
-    return this.send('auth.register', dto);
+    return this.send({ cmd: 'auth.register' }, dto);
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
   login(@Body() dto: { email: string; password: string }) {
-    return this.send('auth.login', dto);
+    return this.send({ cmd: 'auth.login' }, dto);
   }
 }

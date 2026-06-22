@@ -58,7 +58,7 @@ export class MapGatewayController implements OnModuleInit {
 
   @Get('points')
   findAll() {
-    return this.send('map.findAll', {});
+    return this.send({ cmd: 'map.findAll' }, {});
   }
 
   @Get('points/nearby')
@@ -67,7 +67,7 @@ export class MapGatewayController implements OnModuleInit {
     @Query('lng') lng: string,
     @Query('radius') radius: string,
   ) {
-    return this.send('map.findNearby', {
+    return this.send({ cmd: 'map.findNearby' }, {
       lat: parseFloat(lat),
       lng: parseFloat(lng),
       radius: parseFloat(radius),
@@ -81,7 +81,7 @@ export class MapGatewayController implements OnModuleInit {
     @Query('swLat') swLat: string,
     @Query('swLng') swLng: string,
   ) {
-    return this.send('map.findByBounds', {
+    return this.send({ cmd: 'map.findByBounds' }, {
       neLat: parseFloat(neLat),
       neLng: parseFloat(neLng),
       swLat: parseFloat(swLat),
@@ -91,41 +91,41 @@ export class MapGatewayController implements OnModuleInit {
 
   @Get('points/:id')
   findOne(@Param('id') id: string) {
-    return this.send('map.findOne', { id });
+    return this.send({ cmd: 'map.findOne' }, { id });
   }
 
   @Post('points')
   create(@Body() dto: CreatePointDto) {
-    return this.send('map.create', dto);
+    return this.send({ cmd: 'map.create' }, dto);
   }
 
   @Put('points/:id')
   update(@Param('id') id: string, @Body() dto: UpdatePointDto) {
-    return this.send('map.update', { id, dto });
+    return this.send({ cmd: 'map.update' }, { id, dto });
   }
 
   @Delete('points/:id')
   remove(@Param('id') id: string) {
-    return this.send('map.remove', { id });
+    return this.send({ cmd: 'map.remove' }, { id });
   }
 
   @Get('events')
   findAllEvents() {
-    return this.send('event.findAll', {});
+    return this.send({ cmd: 'event.findAll' }, {});
   }
 
   @Get('points/:pointId/events')
   findEventsByPoint(@Param('pointId') pointId: string) {
-    return this.send('event.findByPoint', { pointId });
+    return this.send({ cmd: 'event.findByPoint' }, { pointId });
   }
 
   @Post('events')
   createEvent(@Body() dto: Record<string, unknown>) {
-    return this.send('event.create', dto);
+    return this.send({ cmd: 'event.create' }, dto);
   }
 
   @Delete('events/:id')
   removeEvent(@Param('id') id: string) {
-    return this.send('event.remove', { id });
+    return this.send({ cmd: 'event.remove' }, { id });
   }
 }

@@ -57,17 +57,17 @@ export class ProfileGatewayController implements OnModuleInit {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.send('profile.findOne', { id });
+    return this.send({ cmd: 'profile.findOne' }, { id });
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: Record<string, unknown>) {
-    return this.send('profile.update', { id, dto });
+    return this.send({ cmd: 'profile.update' }, { id, dto });
   }
 
   @Get(':userId/preferences')
   getPreferences(@Param('userId') userId: string) {
-    return this.send('get_user_preferences', { userId });
+    return this.send({ cmd: 'get_user_preferences' }, { userId });
   }
 
   @Put(':userId/preferences')
@@ -75,7 +75,7 @@ export class ProfileGatewayController implements OnModuleInit {
     @Param('userId') userId: string,
     @Body() dto: Record<string, unknown>,
   ) {
-    return this.send('update_user_preferences', { userId, ...dto });
+    return this.send({ cmd: 'update_user_preferences' }, { userId, ...dto });
   }
 
   @Get(':userId/history')
@@ -84,7 +84,7 @@ export class ProfileGatewayController implements OnModuleInit {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    return this.send('get_user_history', {
+    return this.send({ cmd: 'get_user_history' }, {
       userId,
       query: {
         page: page ? parseInt(page) : undefined,
@@ -98,7 +98,7 @@ export class ProfileGatewayController implements OnModuleInit {
     @Param('userId') userId: string,
     @Body() dto: Record<string, unknown>,
   ) {
-    return this.send('add_history_entry', { userId, dto });
+    return this.send({ cmd: 'add_history_entry' }, { userId, dto });
   }
 
   @Delete(':userId/history/:entryId')
@@ -106,11 +106,11 @@ export class ProfileGatewayController implements OnModuleInit {
     @Param('userId') userId: string,
     @Param('entryId') entryId: string,
   ) {
-    return this.send('delete_history_entry', { userId, entryId });
+    return this.send({ cmd: 'delete_history_entry' }, { userId, entryId });
   }
 
   @Get(':userId/history/stats')
   getHistoryStats(@Param('userId') userId: string) {
-    return this.send('get_user_history_stats', { userId });
+    return this.send({ cmd: 'get_user_history_stats' }, { userId });
   }
 }
