@@ -11,14 +11,15 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  OnModuleInit,
 } from '@nestjs/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
-import { lastValueFrom, timeout, catchError, throwError } from 'rxjs';
+import { lastValueFrom, timeout } from 'rxjs';
 import { CreatePointDto } from '../dto/create-point.dto';
 import { UpdatePointDto } from '../dto/update-point.dto';
 
 @Controller('map')
-export class MapGatewayController {
+export class MapGatewayController implements OnModuleInit {
   private readonly logger = new Logger(MapGatewayController.name);
 
   constructor(
@@ -26,36 +27,31 @@ export class MapGatewayController {
     private readonly mapsClient: ClientProxy,
   ) {}
 
+  async onModuleInit() {
+    try {
+      await this.mapsClient.connect();
+      this.logger.log('Connected to maps service');
+    } catch (err: any) {
+      this.logger.error(`Failed to connect to maps service: ${err.message}`);
+    }
+  }
+
   private async send<T>(pattern: any, data: any): Promise<T> {
     try {
       return await lastValueFrom(
-        this.mapsClient.send(pattern, data).pipe(
-          timeout(10000),
-          catchError((err) => {
-            this.logger.error(`TCP error for ${JSON.stringify(pattern)}: ${err.message}`);
-            return throwError(() => err);
-          }),
-        ),
+        this.mapsClient.send(pattern, data).pipe(timeout(15000)),
       );
     } catch (err: any) {
       if (err instanceof RpcException) {
         throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
       }
       if (err.name === 'TimeoutError') {
-        throw new HttpException(
-          'El servicio de mapas no respondió a tiempo',
-          HttpStatus.SERVICE_UNAVAILABLE,
-        );
+        throw new HttpException('Servicio de mapas no disponible (timeout)', HttpStatus.SERVICE_UNAVAILABLE);
       }
-      if (err.code === 'ECONNREFUSED' || err.message?.includes('ECONNREFUSED')) {
-        throw new HttpException(
-          'Servicio de mapas no disponible',
-          HttpStatus.SERVICE_UNAVAILABLE,
-        );
-      }
+      this.logger.error(`Error in ${JSON.stringify(pattern)}: ${err.message || err}`);
       throw new HttpException(
-        err.message ?? 'Error interno',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        err?.message || 'Error en el servicio de mapas',
+        HttpStatus.SERVICE_UNAVAILABLE,
       );
     }
   }

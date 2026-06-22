@@ -7,12 +7,13 @@ import {
   HttpStatus,
   HttpException,
   Logger,
+  OnModuleInit,
 } from '@nestjs/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
-import { lastValueFrom, timeout, catchError, throwError } from 'rxjs';
+import { lastValueFrom, timeout } from 'rxjs';
 
 @Controller('auth')
-export class AuthGatewayController {
+export class AuthGatewayController implements OnModuleInit {
   private readonly logger = new Logger(AuthGatewayController.name);
 
   constructor(
@@ -20,36 +21,31 @@ export class AuthGatewayController {
     private readonly profileClient: ClientProxy,
   ) {}
 
+  async onModuleInit() {
+    try {
+      await this.profileClient.connect();
+      this.logger.log('Connected to profile service');
+    } catch (err: any) {
+      this.logger.error(`Failed to connect to profile service: ${err.message}`);
+    }
+  }
+
   private async send<T>(pattern: any, data: any): Promise<T> {
     try {
       return await lastValueFrom(
-        this.profileClient.send(pattern, data).pipe(
-          timeout(10000),
-          catchError((err) => {
-            this.logger.error(`TCP error for ${JSON.stringify(pattern)}: ${err.message}`);
-            return throwError(() => err);
-          }),
-        ),
+        this.profileClient.send(pattern, data).pipe(timeout(15000)),
       );
     } catch (err: any) {
       if (err instanceof RpcException) {
         throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
       }
       if (err.name === 'TimeoutError') {
-        throw new HttpException(
-          'Servicio de autenticación no respondió a tiempo',
-          HttpStatus.SERVICE_UNAVAILABLE,
-        );
+        throw new HttpException('Servicio de autenticación no disponible (timeout)', HttpStatus.SERVICE_UNAVAILABLE);
       }
-      if (err.code === 'ECONNREFUSED' || err.message?.includes('ECONNREFUSED')) {
-        throw new HttpException(
-          'Servicio de autenticación no disponible',
-          HttpStatus.SERVICE_UNAVAILABLE,
-        );
-      }
+      this.logger.error(`Error in ${JSON.stringify(pattern)}: ${err.message || err}`);
       throw new HttpException(
-        err.message ?? 'Error interno',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        err?.message || 'Error en el servicio de autenticación',
+        HttpStatus.SERVICE_UNAVAILABLE,
       );
     }
   }
